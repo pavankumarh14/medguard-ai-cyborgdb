@@ -1,0 +1,67 @@
+version: '3.9'
+
+services:
+  # PostgreSQL Database with encrypted storage
+  postgres:
+    image: postgres:15-alpine
+    container_name: medguard_postgres
+    environment:
+      POSTGRES_DB: medguard_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - medguard_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # FastAPI Backend Service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: medguard_backend
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: medguard_db
+      DB_USER: postgres
+      DB_PASSWORD: ${DB_PASSWORD:-password}
+      CYBORG_DB_KEY: ${CYBORG_DB_KEY:-default-encryption-key}
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - medguard_network
+    volumes:
+      - ./backend:/app/backend
+    command: uvicorn app:app --host 0.0.0.0 --port 8000 --reload
+
+  # Frontend Service (Optional - for future development)
+  # frontend:
+  #   build:
+  #     context: ./frontend
+  #     dockerfile: Dockerfile
+  #   container_name: medguard_frontend
+  #   ports:
+  #     - "3000:3000"
+  #   depends_on:
+  #     - backend
+  #   networks:
+  #     - medguard_network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  medguard_network:
+    driver: bridge

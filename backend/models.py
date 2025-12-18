@@ -14,6 +14,24 @@ class RecordType(str, Enum):
     CHAT_INTERACTION = "chat_interaction"
     PATIENT_INFO = "patient_info"
 
+class AuditLogType(str, Enum):
+    """Types of audit log actions for HIPAA compliance tracking."""
+    LOGIN = "login"
+    LOGOUT = "logout"
+    VIEW_RECORD = "view_record"
+    CREATE_RECORD = "create_record"
+    UPDATE_RECORD = "update_record"
+    DELETE_RECORD = "delete_record"
+    LAB_ORDER = "lab_order"
+    PRESCRIPTION = "prescription"
+    BILLING = "billing"
+    CHAT_INTERACTION = "chat_interaction"
+    PATIENT_INFO = "patient_info"
+    ACCESS_DENIED = "access_denied"
+    DATA_EXPORT = "data_export"
+    ENCRYPTION_OPERATION = "encryption_operation"
+    
+
 
 class EncryptedRecord:
     """Represents an encrypted healthcare record in CyborgDB."""
